@@ -82,11 +82,36 @@ class TalentJobRanker:
         self.model_strategy = model_strategy()
         self.feature_engineer = FeatureEngineerFactory.create("default")
         if model_path:
-            asyncio.run(self._load_model(model_path))
-        else:
-            logger.info("Initialized a new %s model and FeatureEngineer.", model_strategy.__name__)
+            try:
+                self._load_model_sync(model_path)
+            except Exception as e:
+                logger.error(f"Failed to load model: {e}")
+                # Initialize a new model if loading fails
+                raise ModelLoadError(f"Failed to load model: {e}")
+        logger.info(f"Initialized a new {model_strategy.__name__} model and FeatureEngineer.")
 
-    async def _load_model(self, model_path: str):
+    def _load_model_sync(self, model_path: str):
+        """
+        Synchronously loads the model and feature engineer from the specified path.
+
+        Args:
+            model_path (str): The path to the pre-trained model.
+
+        Raises:
+            ModelLoadError: If loading the model or feature engineer fails.
+        """
+        try:
+            self.model_strategy = joblib.load(model_path)
+            self.feature_engineer = joblib.load(model_path.replace("model_", "feature_engineer"))
+            logger.info(f"Loaded model and feature engineer from {model_path}")
+        except FileNotFoundError as e:
+            logger.error(f"File not found: {e}")
+            raise ModelLoadError(f"File not found: {e}")
+        except Exception as e:
+            logger.error(f"Failed to load model or feature engineer: {e}")
+            raise ModelLoadError(f"Failed to load model: {e}")
+
+    async def load_model_async(self, model_path: str):
         """
         Asynchronously loads the model and feature engineer from the specified path.
 
@@ -98,16 +123,16 @@ class TalentJobRanker:
         """
         try:
             self.model_strategy = await asyncio.to_thread(joblib.load, model_path)
-            self.feature_engineer = await asyncio.to_thread(joblib.load, model_path.replace("model_", "feature_engineer"))
-            logger.info("Loaded model and feature engineer from %s", model_path)
+            self.feature_engineer = await asyncio.to_thread(joblib.load, model_path.replace("model_", "feature_engineer_"))
+            logger.info(f"Loaded model and feature engineer from {model_path}")
         except FileNotFoundError as e:
-            logger.error("File not found: %s", e)
+            logger.error(f"File not found: {e}")
             raise ModelLoadError(f"File not found: {e}")
         except Exception as e:
-            logger.error("Failed to load model or feature engineer: %s", e)
+            logger.error(f"Failed to load model or feature engineer: {e}")
             raise ModelLoadError(f"Failed to load model: {e}")
-
-    def fit(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
+    
+    def train(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
         """
         Fits the model using the provided talent and job data.
 
