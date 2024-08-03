@@ -98,8 +98,11 @@ class TalentJobRanker:
         """
         try:
             self.model_strategy = await asyncio.to_thread(joblib.load, model_path)
-            self.feature_engineer = await asyncio.to_thread(joblib.load, model_path.replace("model", "feature_engineer"))
+            self.feature_engineer = await asyncio.to_thread(joblib.load, model_path.replace("model_", "feature_engineer"))
             logger.info("Loaded model and feature engineer from %s", model_path)
+        except FileNotFoundError as e:
+            logger.error("File not found: %s", e)
+            raise ModelLoadError(f"File not found: {e}")
         except Exception as e:
             logger.error("Failed to load model or feature engineer: %s", e)
             raise ModelLoadError(f"Failed to load model: {e}")
@@ -172,13 +175,13 @@ class TalentJobRanker:
         logger.info("Confusion Matrix:\n%s", confusion_matrix(y_test, y_pred))
         logger.info("Classification Report:\n%s", classification_report(y_test, y_pred))
 
-    async def predict(self, talent: pd.DataFrame, job: pd.DataFrame) -> Tuple[bool, float]:
+    def predict(self, job: pd.DataFrame, talent: pd.DataFrame) -> Tuple[bool, float]:
         """
-        Asynchronously predicts the match label and score for given talent and job profiles.
+        Synchronously predicts the match label and score for given talent and job profiles.
 
         Args:
-            talent (Dict): Dictionary containing the talent's profile.
-            job (Dict): Dictionary containing the job's profile.
+            talent (pd.DataFrame): DataFrame containing the talent's profile.
+            job (pd.DataFrame): DataFrame containing the job's profile.
 
         Returns:
             Tuple[bool, float]: The predicted label (True/False) and score (float).
@@ -187,16 +190,21 @@ class TalentJobRanker:
             >>> ranker = TalentJobRanker()
             >>> talent = pd.DataFrame({"languages": ..., "job_roles": ...})
             >>> job =  pd.DataFrame({"languages": ..., "job_roles": ...})
-            >>> label, score = await ranker.predict(talent, job)
+            >>> label, score = ranker.predict(job, talent)
             >>> print(f"Match: {label}, Score: {score}")
             Match: True, Score: 0.85
         """
         try:
-            features = await asyncio.to_thread(self._transform_input, talent, job)
-            label = await asyncio.to_thread(self.model_strategy.predict, features)
-            score = await asyncio.to_thread(self.model_strategy.predict_proba, features)
+            # Directly call the synchronous methods
+            features = self._transform_input(job, talent)
+            labels = self.model_strategy.predict(features)
+            scores = self.model_strategy.predict_proba(features)
             logger.info("Prediction made successfully.")
-            return bool(label[0]), float(score[0][1])
+            # Check if the input is for a single prediction or multiple predictions
+            if len(labels) == 1:
+                return bool(labels[0]), float(scores[0][1])
+            else:
+                return [bool(label) for label in labels], [float(score[1]) for score in scores]
         except Exception as e:
             logger.error("Error during prediction: %s", e)
             raise

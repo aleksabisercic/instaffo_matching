@@ -7,6 +7,7 @@ setup(
     author="Aleksa Bisercic",
     author_email="aleksabisercic@gmail.com",
     packages=find_packages(),
+    include_package_data=True,
     install_requires=["numpy", "pandas>=2.0.0", "scikit-learn>=1.0", "joblib==1.4.2"],
     extras_require={
         "dev": [

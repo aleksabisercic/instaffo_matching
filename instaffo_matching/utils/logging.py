@@ -14,12 +14,6 @@ def get_log_level():
     """
     return os.getenv("LOG_LEVEL", "INFO").upper()
 
-
-# SET LOGGING
-logger = logging.getLogger(__name__)
-logger.setLevel(get_log_level())
-
-
 def get_debug_level(debug_level):
     """Transform debug level from string to logging flags.
 

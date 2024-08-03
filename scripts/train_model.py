@@ -11,41 +11,39 @@ logger = setup_logger()
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train TalentJobRanker model")
-    parser.add_argument('--data_path', type=str, default="../data/data.json", help="Path to the data JSON file")
-    parser.add_argument('--model_save_path', type=str, default="../models_artifacts/", help="Directory to save the trained model")
+    parser.add_argument('--data_path', type=str, default="./data/data.json", help="Path to the data JSON file")
+    parser.add_argument('--model_save_path', type=str, default="./models_artifacts/", help="Directory to save the trained model")
     return parser.parse_args()
 
 async def main(data_path, model_save_path):
-    try:
-        # Load data
-        data = load_data(data_path)
-        talent_df, job_df, labels_df = get_matching_dataframes(data=data)
-        logger.info("Data loaded successfully")
+    # Load data
+    data = load_data(data_path)
+    talent_df, job_df, labels_df = get_matching_dataframes(data=data)
+    logger.info("Data loaded successfully")
 
-        # Clean / Preprocess data
-        talent_df, job_df = standardize_data(talent_df, job_df)
-        logger.info("Data cleaned successfully")
+    # Clean / Preprocess data
+    talent_df, job_df = standardize_data(talent_df, job_df)
+    logger.info("Data cleaned successfully")
 
-        # Fit model
-        ranker = TalentJobRanker()
-        ranker.fit(talent_df, job_df, labels_df)
-        logger.info("Model fitted successfully")
+    # Fit model
+    ranker = TalentJobRanker()
+    ranker.fit(talent_df, job_df, labels_df)
+    logger.info("Model fitted successfully")
 
-        # Save the trained model
-        formatted_time = datetime.datetime.now().strftime("%d_%m_%Y")
-        model_path = f"{model_save_path}/model_{formatted_time}.joblib"
-        await ranker.save_model(model_path)
-        logger.info(f"Model saved successfully at {model_path}")
+    # Save the trained model
+    formatted_time = datetime.datetime.now().strftime("%d_%m_%Y")
+    model_path = f"{model_save_path}/model_{formatted_time}.joblib"
+    await ranker.save_model(model_path)
+    logger.info(f"Model saved successfully at {model_path}")
 
-        # Load models and predict
-        sample_talent = talent_df.iloc[0:50]
-        sample_job = job_df.iloc[0:50]
-        ranker = TalentJobRanker(model_path=model_path)
-        ranker.predict(sample_talent, sample_job)
-        
-
-    except Exception as e:
-        logger.error(f"An error occurred in the main process: {e}")
+    # Load models and predict
+    sample_talent = talent_df.sample(2)
+    sample_job = job_df.loc[sample_talent.index]
+    
+    ranker = TalentJobRanker(model_path=model_path)
+    logger.info("Loaded model and feature engineer successfully")
+    label, score = ranker.predict(sample_job, talent_df)
+    logger.info(f"Predicted label: {label}, score: {score}")
 
 if __name__ == "__main__":
     # Useage from root: 
