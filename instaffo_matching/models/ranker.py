@@ -1,7 +1,7 @@
 import asyncio
-from typing import Dict, Tuple, Optional, Type
 import logging
-from logging.handlers import RotatingFileHandler
+from typing import List, Optional, Tuple, Type, Union
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -15,8 +15,10 @@ from instaffo_matching.features.engineer import FeatureEngineer
 # Configure logger
 logger = logging.getLogger(__name__)
 
+
 class ModelStrategy(BaseEstimator):
     """Base class for model strategies."""
+
     def fit(self, X, y):
         raise NotImplementedError
 
@@ -26,8 +28,10 @@ class ModelStrategy(BaseEstimator):
     def predict_proba(self, X):
         raise NotImplementedError
 
+
 class GradientBoostingStrategy(ModelStrategy):
     """Gradient Boosting model strategy."""
+
     def __init__(self):
         self.model = GradientBoostingClassifier()
 
@@ -40,8 +44,10 @@ class GradientBoostingStrategy(ModelStrategy):
     def predict_proba(self, X):
         return self.model.predict_proba(X)
 
+
 class FeatureEngineerFactory:
     """Factory for creating feature engineers."""
+
     @staticmethod
     def create(engineer_type: str) -> FeatureEngineer:
         if engineer_type == "default":
@@ -49,9 +55,12 @@ class FeatureEngineerFactory:
         # For future extensions
         raise ValueError(f"Unknown engineer type: {engineer_type}")
 
+
 class ModelLoadError(Exception):
     """Raised when model loading fails."""
+
     pass
+
 
 class TalentJobRanker:
     """
@@ -63,9 +72,14 @@ class TalentJobRanker:
         model (ModelStrategy): The machine learning model strategy used for predictions.
         feature_engineer (FeatureEngineer): The object used to transform raw data into model-ready features.
     """
+
     _instance = None
 
-    def __new__(cls, model_path: Optional[str] = None, model_strategy: Type[ModelStrategy] = GradientBoostingStrategy):
+    def __new__(
+        cls,
+        model_path: Optional[str] = None,
+        model_strategy: Type[ModelStrategy] = GradientBoostingStrategy,
+    ):
         if cls._instance is None:
             cls._instance = super(TalentJobRanker, cls).__new__(cls)
             cls._instance._initialize(model_path, model_strategy)
@@ -123,7 +137,9 @@ class TalentJobRanker:
         """
         try:
             self.model_strategy = await asyncio.to_thread(joblib.load, model_path)
-            self.feature_engineer = await asyncio.to_thread(joblib.load, model_path.replace("model_", "feature_engineer_"))
+            self.feature_engineer = await asyncio.to_thread(
+                joblib.load, model_path.replace("model_", "feature_engineer_")
+            )
             logger.info(f"Loaded model and feature engineer from {model_path}")
         except FileNotFoundError as e:
             logger.error(f"File not found: {e}")
@@ -131,7 +147,7 @@ class TalentJobRanker:
         except Exception as e:
             logger.error(f"Failed to load model or feature engineer: {e}")
             raise ModelLoadError(f"Failed to load model: {e}")
-    
+
     def fit(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
         """
         Fits the model using the provided talent and job data.
@@ -153,7 +169,9 @@ class TalentJobRanker:
             logger.error("Error during the training process: %s", e)
             raise
 
-    def _prepare_data(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def _prepare_data(
+        self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Prepares the training and testing data.
 
@@ -171,7 +189,7 @@ class TalentJobRanker:
         # Fit on training data and transform both training and testing data
         X_train = self.feature_engineer.fit_transform(job_df_train, talent_df_train)
         X_test = self.feature_engineer.transform(job_df_test, talent_df_test)
-        
+
         # Get labels for training and testing data
         y_train = labels.loc[job_df_train.index, "label"]
         y_test = labels.loc[job_df_test.index, "label"]
@@ -200,7 +218,9 @@ class TalentJobRanker:
         logger.info("Confusion Matrix:\n%s", confusion_matrix(y_test, y_pred))
         logger.info("Classification Report:\n%s", classification_report(y_test, y_pred))
 
-    def predict(self, job: pd.DataFrame, talent: pd.DataFrame) -> Union[Tuple[bool, float], Tuple[List[bool], List[float]]]:
+    def predict(
+        self, job: pd.DataFrame, talent: pd.DataFrame
+    ) -> Union[Tuple[bool, float], Tuple[List[bool], List[float]]]:
         """
         Synchronously predicts the match label and score for given talent and job profiles.
 
@@ -259,7 +279,11 @@ class TalentJobRanker:
         """
         try:
             await asyncio.to_thread(joblib.dump, self.model_strategy, model_path)
-            await asyncio.to_thread(joblib.dump, self.feature_engineer, model_path.replace("model_", "feature_engineer"))
+            await asyncio.to_thread(
+                joblib.dump,
+                self.feature_engineer,
+                model_path.replace("model_", "feature_engineer"),
+            )
             logger.info("Model and feature engineer saved to %s", model_path)
         except Exception as e:
             logger.error("Error saving the model or feature engineer: %s", e)

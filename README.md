@@ -210,7 +210,7 @@ Top Feature Importance:
 | Seniority Match (0.0)          | 0.107176   |
 | Seniority Match (1.0)          | 0.048573   |
 
-These results demonstrate the model's strong ability to identify suitable matches while considering various important factors in the hiring process. For detils refer to `03_feature_engineering_and_model_training_v1.ipynb`
+These results demonstrate the model's strong ability to identify suitable matches while considering various important factors in the hiring process. Special attention was given to thoroughly reviewe the training code, including aspects related to data leakage and other crucial elements as results seemed too good. For more details, please refer to `03_feature_engineering_and_model_training_v1.ipynb` and `04_feature_engineering_and_model_training_v2.ipynb`.
 
 
 ### Advanced Usage

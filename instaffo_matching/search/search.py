@@ -1,14 +1,17 @@
 import asyncio
-from typing import List, Dict
-import pandas as pd
-from instaffo_matching.models.retriver import CandidateFilter 
-from instaffo_matching.models.ranker import TalentJobRanker
-from instaffo_matching.data.loader import load_data, get_matching_dataframes
-from instaffo_matching.data.preprocessor import standardize_data
-from instaffo_matching.utils.metrics import timing_decorator
 import logging
+from typing import Dict, List
+
+import pandas as pd
+
+from instaffo_matching.data.loader import get_matching_dataframes, load_data
+from instaffo_matching.data.preprocessor import standardize_data
+from instaffo_matching.models.ranker import TalentJobRanker
+from instaffo_matching.models.retriver import CandidateFilter
+from instaffo_matching.utils.metrics import timing_decorator
 
 logger = logging.getLogger(__name__)
+
 
 class Search:
     """
@@ -19,7 +22,7 @@ class Search:
         filter (CandidateFilter): The filter used to pre-filter candidates based on basic criteria.
     """
 
-    def __init__(self, model_path: str = '../models_artifacts/model_03_08_2024.joblib'):
+    def __init__(self, model_path: str = "../models_artifacts/model_03_08_2024.joblib"):
         """
         Initializes the Search class with a pre-trained model.
 
@@ -54,9 +57,11 @@ class Search:
                 "score": 0.85,
             }
         """
-        if not self.filter.meets_language_requirements(talent['languages'], job['languages']) or \
-           not self.filter.degree_sufficient(talent['degree'], job['min_degree']) or \
-           not self.filter.seniority_sufficient(talent['seniority'], job['seniorities']):
+        if (
+            not self.filter.meets_language_requirements(talent["languages"], job["languages"])
+            or not self.filter.degree_sufficient(talent["degree"], job["min_degree"])
+            or not self.filter.seniority_sufficient(talent["seniority"], job["seniorities"])
+        ):
             return {
                 "talent": talent,
                 "job": job,
@@ -133,7 +138,7 @@ class Search:
             ]
             all_results.extend(job_results)
 
-        return sorted(all_results, key=lambda x: x['score'], reverse=True)
+        return sorted(all_results, key=lambda x: x["score"], reverse=True)
 
     def warm_up_cache(self, talents: List[Dict], jobs: List[Dict]):
         """
@@ -161,18 +166,23 @@ class Search:
         # self.cache.clear()  # Uncomment if cache is implemented
         logger.info(f"Model updated to {new_model_path}")
 
+
 # Example usage
 if __name__ == "__main__":
     data = load_data("../data/data.json")
     talent_df, job_df, labels_df = get_matching_dataframes(data=data)
 
-    search = Search('../models_artifacts/model_03_08_2024.joblib')
+    search = Search("../models_artifacts/model_03_08_2024.joblib")
 
     # Test the match function
     result = search.match(talent=talent_df.iloc[0].to_dict(), job=job_df.iloc[0].to_dict())
     print(result)
 
     # Test the match_bulk function
-    results = asyncio.run(search.match_bulk(talent_df.head(100).to_dict(orient='records'), 
-                                            job_df.head(100).to_dict(orient='records')))
+    results = asyncio.run(
+        search.match_bulk(
+            talent_df.head(100).to_dict(orient="records"),
+            job_df.head(100).to_dict(orient="records"),
+        )
+    )
     print(results)
