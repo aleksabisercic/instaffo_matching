@@ -200,7 +200,7 @@ class TalentJobRanker:
         logger.info("Confusion Matrix:\n%s", confusion_matrix(y_test, y_pred))
         logger.info("Classification Report:\n%s", classification_report(y_test, y_pred))
 
-    def predict(self, job: pd.DataFrame, talent: pd.DataFrame) -> Tuple[bool, float]:
+    def predict(self, job: pd.DataFrame, talent: pd.DataFrame) -> Union[Tuple[bool, float], Tuple[List[bool], List[float]]]:
         """
         Synchronously predicts the match label and score for given talent and job profiles.
 
@@ -239,8 +239,8 @@ class TalentJobRanker:
         Transforms the input talent and job profiles into the feature format required by the model.
 
         Args:
-            talent (Dict): Dictionary containing the talent's profile.
-            job (Dict): Dictionary containing the job's profile.
+            talent (pd.DataFrame): DataFrame containing the talent's profile.
+            job (pd.DataFrame): DataFrame containing the job's profile.
 
         Returns:
             np.ndarray: The transformed feature matrix.

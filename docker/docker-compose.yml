@@ -7,4 +7,4 @@ services:
     volumes:
       - .:/app
     environment:
-      - MODEL_PATH=/app/models/trained_model.pkl
+      - MODEL_PATH=/app/models_artifacts/feature_engineer03_08_2024.joblib

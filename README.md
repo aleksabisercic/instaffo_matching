@@ -23,7 +23,8 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
   - [Command Line Interface (CLI)](#command-line-interface-cli)
     - [Training the Model](#training-the-model)
     - [Evaluating the Model](#evaluating-the-model)
-  - [API Usage](#api-usage)
+  - [Interactive Notebooks](#interactive-notebooks)
+  - [Model Performance and Insights](#model-performance-and-insights)
     - [Advanced Usage](#advanced-usage)
     - [Support](#support)
 
@@ -43,11 +44,12 @@ Instaffo Matching employs a sophisticated multi-stage pipeline to ensure optimal
 
 - Advanced feature engineering using Tf-Idf embeddings and other
 - Multi-stage search pipeline for efficient and accurate matching
-- Explainable AI integration using SHAP (SHapley Additive exPlanations)
 - Asynchronous bulk matching capabilities
-- RESTful API with OpenAPI (Swagger) specification
 - Comprehensive logging and monitoring
 - Scalable architecture ready for high-volume processing
+- (comming soon) Explainable AI integration using SHAP (SHapley Additive exPlanations)
+- (comming soon) RESTful API with OpenAPI (Swagger) specification
+
 
 #### **Key Classes:**
 - `FeatureEngineer`: Handles data preprocessing and feature extraction. (`features/engineer.py`)
@@ -140,19 +142,69 @@ To evaluate the model's performance, use the evaluation script:
 python scripts/evaluate_model.py --data_path data/data.json --model_path ./models_artifacts/model_03_08_2024.joblib
 ```
 
-## API Usage
+## Interactive Notebooks
 
-Start the API server:
+I encourage you to explore Jupyter notebooks to gain deeper insights into the data analysis, feature engineering, and model training process:
 
-```bash
-uvicorn talent_job_matcher.api.main:app --reload
+- `01_exploratory_data_analysis.ipynb`: Initial data exploration and insights
+- `02_exploratory_filter_analysis.ipynb`: Analysis of filtering techniques
+- `03_feature_engineering_and_model_training_v1.ipynb`: First iteration of feature engineering and model training
+- `04_feature_engineering_and_model_training_v2.ipynb`: Less graphs in training more like script
+- `05_search_implementation_example.ipynb`: Demonstration of the Search functionality
+
+These notebooks provide a comprehensive look at the development process and can help you understand the reasoning behind our approach.
+
+To run the notebooks:
+
+1. Ensure you've installed the development dependencies:
+   ```bash
+   pip install -e .[dev]
+   ```
+2. Start Jupyter Lab:
+   ```bash
+   jupyter lab
+   ```
+3. Navigate to the `notebooks/` directory and open the desired notebook.
+
+## Model Performance and Insights
+
+Our model achieves exceptional performance in matching talents with job opportunities:
+
+```
+              precision    recall  f1-score   support
+
+       False      0.99      0.99      0.99       200
+        True      0.99      0.99      0.99       200
+
+    accuracy                          0.99       400
+   macro avg      0.99      0.99      0.99       400
+weighted avg      0.99      0.99      0.99       400
 ```
 
-The API documentation will be available at http://localhost:8000/docs.
+Confusion Matrix:
+```
+[[199,   1]
+ [  2, 198]]
+```
+
+Top Feature Importance:
+
+| Feature                        | Importance |
+|--------------------------------|------------|
+| Degree Difference              | 0.236102   |
+| Salary Difference Percentage   | 0.214210   |
+| Role Similarity                | 0.162905   |
+| Salary Ratio                   | 0.114169   |
+| Language Match Score           | 0.112842   |
+| Seniority Match (0.0)          | 0.107176   |
+| Seniority Match (1.0)          | 0.048573   |
+
+These results demonstrate the model's strong ability to identify suitable matches while considering various important factors in the hiring process.
+
 
 ### Advanced Usage
 
-For more advanced usage, including bulk matching, explanation of results, and customization of the matching process, please refer to our detailed documentation.
+For more advanced usage, including bulk matching, explanation of results, and customization of the matching process, please refer to our detailed notebooks (`notebooks`) and source code in `instaffo_matching`.
 
 ### Support
 
