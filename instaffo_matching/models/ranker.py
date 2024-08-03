@@ -1,78 +1,233 @@
-from typing import Dict
-
+import asyncio
+from typing import Dict, Tuple, Optional, Type
+import logging
+from logging.handlers import RotatingFileHandler
 import joblib
 import numpy as np
 import pandas as pd
+from sklearn.base import BaseEstimator
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 
 from instaffo_matching.features.engineer import FeatureEngineer
 
+# Configure logger
+logger = logging.getLogger(__name__)
+
+class ModelStrategy(BaseEstimator):
+    """Base class for model strategies."""
+    def fit(self, X, y):
+        raise NotImplementedError
+
+    def predict(self, X):
+        raise NotImplementedError
+
+    def predict_proba(self, X):
+        raise NotImplementedError
+
+class GradientBoostingStrategy(ModelStrategy):
+    """Gradient Boosting model strategy."""
+    def __init__(self):
+        self.model = GradientBoostingClassifier()
+
+    def fit(self, X, y):
+        return self.model.fit(X, y)
+
+    def predict(self, X):
+        return self.model.predict(X)
+
+    def predict_proba(self, X):
+        return self.model.predict_proba(X)
+
+class FeatureEngineerFactory:
+    """Factory for creating feature engineers."""
+    @staticmethod
+    def create(engineer_type: str) -> FeatureEngineer:
+        if engineer_type == "default":
+            return FeatureEngineer()
+        # For future extensions
+        raise ValueError(f"Unknown engineer type: {engineer_type}")
+
+class ModelLoadError(Exception):
+    """Raised when model loading fails."""
+    pass
 
 class TalentJobRanker:
-    def __init__(self, model_path: str = None):
-        # Load the model and feature engineer if a path is provided
-        if model_path:
-            self.model = joblib.load(model_path)
-            self.feature_engineer = joblib.load(model_path.replace("model", "feature_engineer"))
-        else:
-            # If no model path provided, set up for new training
-            self.model = GradientBoostingClassifier()
-            self.feature_engineer = FeatureEngineer()
+    """
+    A class used to train and use a machine learning model for ranking the match between talents and jobs.
 
-    def fit(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
-        # split job_df and talent_df into train and test and then fit feature engineer on train and transform on test
+    This class implements the Singleton pattern to ensure only one instance exists.
+
+    Attributes:
+        model (ModelStrategy): The machine learning model strategy used for predictions.
+        feature_engineer (FeatureEngineer): The object used to transform raw data into model-ready features.
+    """
+    _instance = None
+
+    def __new__(cls, model_path: Optional[str] = None, model_strategy: Type[ModelStrategy] = GradientBoostingStrategy):
+        if cls._instance is None:
+            cls._instance = super(TalentJobRanker, cls).__new__(cls)
+            cls._instance._initialize(model_path, model_strategy)
+        return cls._instance
+
+    def _initialize(self, model_path: Optional[str], model_strategy: Type[ModelStrategy]):
+        """
+        Initializes the TalentJobRanker with an optional pre-trained model.
+
+        Args:
+            model_path (str, optional): The path to a pre-trained model. If not provided, initializes a new model.
+            model_strategy (Type[ModelStrategy]): The model strategy to use.
+        """
+        self.model_strategy = model_strategy()
+        self.feature_engineer = FeatureEngineerFactory.create("default")
+        if model_path:
+            asyncio.run(self._load_model(model_path))
+        else:
+            logger.info("Initialized a new %s model and FeatureEngineer.", model_strategy.__name__)
+
+    async def _load_model(self, model_path: str):
+        """
+        Asynchronously loads the model and feature engineer from the specified path.
+
+        Args:
+            model_path (str): The path to the pre-trained model.
+
+        Raises:
+            ModelLoadError: If loading the model or feature engineer fails.
+        """
+        try:
+            self.model_strategy = await asyncio.to_thread(joblib.load, model_path)
+            self.feature_engineer = await asyncio.to_thread(joblib.load, model_path.replace("model", "feature_engineer"))
+            logger.info("Loaded model and feature engineer from %s", model_path)
+        except Exception as e:
+            logger.error("Failed to load model or feature engineer: %s", e)
+            raise ModelLoadError(f"Failed to load model: {e}")
+
+    async def fit(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
+        """
+        Asynchronously fits the model using the provided talent and job data.
+
+        Args:
+            talent_df (pd.DataFrame): DataFrame containing talent data.
+            job_df (pd.DataFrame): DataFrame containing job data.
+            labels (pd.DataFrame): DataFrame containing match labels.
+
+        Returns:
+            None
+        """
+        logger.info("Starting training process.")
+        try:
+            X_train, X_test, y_train, y_test = await asyncio.to_thread(self._prepare_data, talent_df, job_df, labels)
+            await asyncio.to_thread(self._train_model, X_train, y_train)
+            await asyncio.to_thread(self._evaluate_model, X_test, y_test)
+        except Exception as e:
+            logger.error("Error during the training process: %s", e)
+            raise
+
+    def _prepare_data(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Prepares the training and testing data.
+
+        Args:
+            talent_df (pd.DataFrame): DataFrame containing talent data.
+            job_df (pd.DataFrame): DataFrame containing job data.
+            labels (pd.DataFrame): DataFrame containing match labels.
+
+        Returns:
+            Tuple containing the training features, testing features, training labels, and testing labels.
+        """
         job_df_train, job_df_test, talent_df_train, talent_df_test = train_test_split(
             job_df, talent_df, test_size=0.2, random_state=42, stratify=labels["label"]
         )
-        # Fit and transform the feature engineer
+        # Fit on training data and transform both training and testing data
         X_train = self.feature_engineer.fit_transform(job_df_train, talent_df_train)
         X_test = self.feature_engineer.transform(job_df_test, talent_df_test)
-
+        
+        # Get labels for training and testing data
         y_train = labels.loc[job_df_train.index, "label"]
         y_test = labels.loc[job_df_test.index, "label"]
+        return X_train, X_test, y_train, y_test
 
-        # Fit the model
-        self.model = GradientBoostingClassifier()
-        self.model.fit(X_train, y_train)
+    def _train_model(self, X_train: np.ndarray, y_train: np.ndarray):
+        """
+        Trains the model with the provided data.
 
-        self.evaluate(X_test, y_test)
+        Args:
+            X_train (np.ndarray): Training feature matrix.
+            y_train (np.ndarray): Training labels.
+        """
+        self.model_strategy.fit(X_train, y_train)
+        logger.info("Model training completed.")
 
-    def predict(self, talent: Dict, job: Dict) -> tuple:
-        # Create dataframes from the input dictionaries
-        talent_df = pd.DataFrame([talent])
-        job_df = pd.DataFrame([job])
-        # Transform features using the previously fitted feature engineer
-        features = self.feature_engineer.transform(job_df, talent_df)
-        # Predict the match label and score
-        label = self.model.predict(features)[0]
-        score = self.model.predict_proba(features)[0][1]  # Probability of positive class (match)
-        return bool(label), float(score)
+    def _evaluate_model(self, X_test: np.ndarray, y_test: np.ndarray):
+        """
+        Evaluates the model and logs the results.
 
-    def evaluate(self, features: np.ndarray, labels: np.ndarray):
-        y_pred = self.model.predict(features)
-        print(confusion_matrix(labels, y_pred))
-        print(classification_report(labels, y_pred))
-        print("\n")
+        Args:
+            X_test (np.ndarray): Testing feature matrix.
+            y_test (np.ndarray): True labels for the testing set.
+        """
+        y_pred = self.model_strategy.predict(X_test)
+        logger.info("Confusion Matrix:\n%s", confusion_matrix(y_test, y_pred))
+        logger.info("Classification Report:\n%s", classification_report(y_test, y_pred))
 
-        # Get feature importances
-        gb_importances = self.model.feature_importances_
-        feature_names = self.feature_engineer.get_feature_names()
+    async def predict(self, talent: pd.DataFrame, job: pd.DataFrame) -> Tuple[bool, float]:
+        """
+        Asynchronously predicts the match label and score for given talent and job profiles.
 
-        # Create a DataFrame for better visualization
-        gb_feature_importances_df = pd.DataFrame(
-            {"Feature": feature_names, "Importance": gb_importances}
-        )
+        Args:
+            talent (Dict): Dictionary containing the talent's profile.
+            job (Dict): Dictionary containing the job's profile.
 
-        # Sort the DataFrame by importance
-        gb_feature_importances_df = gb_feature_importances_df.sort_values(
-            by="Importance", ascending=False
-        )
+        Returns:
+            Tuple[bool, float]: The predicted label (True/False) and score (float).
 
-        return gb_feature_importances_df
+        Example:
+            >>> ranker = TalentJobRanker()
+            >>> talent = pd.DataFrame({"languages": ..., "job_roles": ...})
+            >>> job =  pd.DataFrame({"languages": ..., "job_roles": ...})
+            >>> label, score = await ranker.predict(talent, job)
+            >>> print(f"Match: {label}, Score: {score}")
+            Match: True, Score: 0.85
+        """
+        try:
+            features = await asyncio.to_thread(self._transform_input, talent, job)
+            label = await asyncio.to_thread(self.model_strategy.predict, features)
+            score = await asyncio.to_thread(self.model_strategy.predict_proba, features)
+            logger.info("Prediction made successfully.")
+            return bool(label[0]), float(score[0][1])
+        except Exception as e:
+            logger.error("Error during prediction: %s", e)
+            raise
 
-    def save_model(self, model_path: str):
-        # Save the model and feature engineer to specified path
-        joblib.dump(self.model, model_path)
-        joblib.dump(self.feature_engineer, model_path.replace("model", "feature_engineer"))
+    def _transform_input(self, talent: pd.DataFrame, job: pd.DataFrame) -> np.ndarray:
+        """
+        Transforms the input talent and job profiles into the feature format required by the model.
+
+        Args:
+            talent (Dict): Dictionary containing the talent's profile.
+            job (Dict): Dictionary containing the job's profile.
+
+        Returns:
+            np.ndarray: The transformed feature matrix.
+        """
+        return self.feature_engineer.transform(talent, job)
+
+    async def save_model(self, model_path: str):
+        """
+        Asynchronously saves the trained model and feature engineer to a specified path.
+
+        Args:
+            model_path (str): The path where the model will be saved.
+
+        Returns:
+            None
+        """
+        try:
+            await asyncio.to_thread(joblib.dump, self.model_strategy, model_path)
+            await asyncio.to_thread(joblib.dump, self.feature_engineer, model_path.replace("model_", "feature_engineer"))
+            logger.info("Model and feature engineer saved to %s", model_path)
+        except Exception as e:
+            logger.error("Error saving the model or feature engineer: %s", e)
+            raise
