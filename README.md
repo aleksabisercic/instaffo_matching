@@ -23,6 +23,7 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
   - [Command Line Interface (CLI)](#command-line-interface-cli)
     - [Training the Model](#training-the-model)
     - [Evaluating the Model](#evaluating-the-model)
+    - [Search Client (Batch and Single Match)](#search-client-batch-and-single-match)
   - [Interactive Notebooks](#interactive-notebooks)
   - [Model Performance and Insights](#model-performance-and-insights)
     - [Advanced Usage](#advanced-usage)
@@ -142,6 +143,16 @@ To evaluate the model's performance, use the evaluation script:
 python scripts/evaluate_model.py --data_path data/data.json --model_path ./models_artifacts/model_03_08_2024.joblib
 ```
 
+### Search Client (Batch and Single Match)
+
+To evaluate search implementation use search_example script:
+
+```bash
+# Usage from root directory:
+python scripts/search_example.py --data_path data/data.json --model_path ./models_artifacts/model_03_08_2024.joblib
+```
+
+
 ## Interactive Notebooks
 
 I encourage you to explore Jupyter notebooks to gain deeper insights into the data analysis, feature engineering, and model training process:
@@ -199,7 +210,7 @@ Top Feature Importance:
 | Seniority Match (0.0)          | 0.107176   |
 | Seniority Match (1.0)          | 0.048573   |
 
-These results demonstrate the model's strong ability to identify suitable matches while considering various important factors in the hiring process.
+These results demonstrate the model's strong ability to identify suitable matches while considering various important factors in the hiring process. For detils refer to `03_feature_engineering_and_model_training_v1.ipynb`
 
 
 ### Advanced Usage
