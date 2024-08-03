@@ -14,7 +14,7 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
   - [Table of Contents](#table-of-contents)
   - [Project Overview](#project-overview)
   - [Features](#features)
-      - [**Key Classes:**](#key-classes)
+      - [Key Classes:](#key-classes)
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
@@ -31,7 +31,7 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
 
 ## Project Overview
 
-[Raw Data] -> [Initial Filtering] -> [Feature Engineering] -> [ML Prediction] -> [Ranking] -> [Explanation] -> [Final Matches]
+[Raw Data] -> [Initial Filtering] -> [Feature Engineering] -> [ML Prediction] -> [(soon) Explanation] -> [Ranking] -> [Final Matches]
 
 Instaffo Matching employs a sophisticated multi-stage pipeline to ensure optimal matching between talents and jobs:
 
@@ -43,16 +43,16 @@ Instaffo Matching employs a sophisticated multi-stage pipeline to ensure optimal
 
 ## Features
 
-- Advanced feature engineering using Tf-Idf embeddings and other
+- Advanced feature engineering using Tf-Idf embeddings and feature combination
 - Multi-stage search pipeline for efficient and accurate matching
 - Asynchronous bulk matching capabilities
 - Comprehensive logging and monitoring
-- Scalable architecture ready for high-volume processing
+- Scalable principals for high-volume processing
 - (comming soon) Explainable AI integration using SHAP (SHapley Additive exPlanations)
 - (comming soon) RESTful API with OpenAPI (Swagger) specification
 
 
-#### **Key Classes:**
+#### Key Classes:
 - `FeatureEngineer`: Handles data preprocessing and feature extraction. (`features/engineer.py`)
 - `TalentJobRanker`: Manages model training, prediction, and lifecycle. (`models/ranker.py`)
 - `CandidateFilter`: Quickly eliminates incompatible matches based on essential criteria. (`models/retriver.py`)
