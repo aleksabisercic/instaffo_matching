@@ -1,13 +1,30 @@
-# Talent-Job Matching System
+# Instaffo Matching System
 
-## Overview
+Instaffo Matching is Talent-Job Matching System designed to efficiently match job canidats with suitable job opportunities. Utilizing advanced machine learning techniques, natural language processing, and a multi-stage matching pipeline, this system provides highly accurate and explainable matches between talents and jobs.
 
-The Talent-Job Matching System is a sophisticated, AI-powered platform designed to efficiently match job seekers with suitable job opportunities. Utilizing advanced machine learning techniques, natural language processing, and a multi-stage matching pipeline, this system provides highly accurate and explainable matches between talents and jobs.
+## Table of Contents
+
+- [Instaffo Matching System](#instaffo-matching-system)
+  - [Table of Contents](#table-of-contents)
+  - [Project Overview](#project-overview)
+  - [Features](#features)
+  - [Setup](#setup)
+      - [Prerequisites](#prerequisites)
+    - [Core Installation](#core-installation)
+    - [Development and Visualization Tools](#development-and-visualization-tools)
+  - [Quick Start](#quick-start)
+  - [API Usage](#api-usage)
+    - [Advanced Usage](#advanced-usage)
+    - [Support](#support)
+
+## Project Overview
+
+Here I will put Arhitecture
 
 ## Features
 
-- Advanced feature engineering using BERT embeddings
-- Multi-stage model pipeline for efficient and accurate matching
+- Advanced feature engineering using Tf-Idf embeddings and other
+- Multi-stage search pipeline for efficient and accurate matching
 - Explainable AI integration using SHAP (SHapley Additive exPlanations)
 - Asynchronous bulk matching capabilities
 - RESTful API with OpenAPI (Swagger) specification
@@ -16,12 +33,27 @@ The Talent-Job Matching System is a sophisticated, AI-powered platform designed 
 
 ## Setup
 
-Clone the repository and install:
+#### Prerequisites
 
+Ensure you have the following installed:
+- Python 3.7 or higher
+- pip (Python package installer)
+
+### Core Installation
+
+To install the core dependencies and the package itself, run:
 ```
 git clone https://github.com/aleksabisercic/instaffo_matching.git
 cd instaffo_matching
 pip install -e .
+```
+
+### Development and Visualization Tools
+
+If you plan to use notebooks and visualization features, install the additional development dependencies:
+
+```bash
+pip install -e .[dev]
 ```
 
 ## Quick Start
