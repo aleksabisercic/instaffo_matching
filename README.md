@@ -1,5 +1,11 @@
 # Instaffo Matching System
 
+![Instaffo Logo](assets/instaffo_logo.png)
+
+[![Coverage Status](https://img.shields.io/codecov/c/github/username/instaffo_matching/master.svg)](https://codecov.io/gh/username/instaffo_matching)
+[![PyPI version](https://badge.fury.io/py/instaffo-matching.svg)](https://badge.fury.io/py/instaffo-matching)
+
+
 Instaffo Matching is Talent-Job Matching System designed to efficiently match job canidats with suitable job opportunities. Utilizing advanced machine learning techniques, natural language processing, and a multi-stage matching pipeline, this system provides highly accurate and explainable matches between talents and jobs.
 
 ## Table of Contents
@@ -8,12 +14,12 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
   - [Table of Contents](#table-of-contents)
   - [Project Overview](#project-overview)
   - [Features](#features)
-      - [Key Classes](#key-classes)
+      - [**Key Classes:**](#key-classes)
   - [Setup](#setup)
-      - [Prerequisites](#prerequisites)
-    - [Core Installation](#core-installation)
-    - [Development and Visualization Tools](#development-and-visualization-tools)
-  - [Quick Start](#quick-start)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+  - [Usage](#usage)
+    - [Quick Start](#quick-start)
   - [Command Line Interface (CLI)](#command-line-interface-cli)
     - [Training the Model](#training-the-model)
     - [Evaluating the Model](#evaluating-the-model)
@@ -23,7 +29,15 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
 
 ## Project Overview
 
-Here I will put Arhitecture
+[Raw Data] -> [Initial Filtering] -> [Feature Engineering] -> [ML Prediction] -> [Ranking] -> [Explanation] -> [Final Matches]
+
+Instaffo Matching employs a sophisticated multi-stage pipeline to ensure optimal matching between talents and jobs:
+
+1. **Initial Filtering**: Quickly eliminates incompatible matches based on essential criteria.
+2. **Feature Engineering**: Transforms raw data into meaningful features using TF-IDF embeddings and custom transformations.
+3. **Machine Learning Prediction**: Utilizes gradient boosting model to predict match quality.
+4. **Ranking**: Sorts potential matches based on predicted scores and additional criteria.
+5. **(Comming soon) Explanation**: Explanability into matching decisions using SHAP values.
 
 ## Features
 
@@ -35,53 +49,39 @@ Here I will put Arhitecture
 - Comprehensive logging and monitoring
 - Scalable architecture ready for high-volume processing
 
-#### Key Classes
-
-The project includes several key classes that are crucial for its functionality:
-
-
-- **`FeatureEngineer`**: This class is responsible for feature extraction and transformation, significantly contributing to the model's performance. It includes methods for data preprocessing, including handling categorical and numerical features.
-
-  ```python
-  from instaffo_matching.features.engineer import FeatureEngineer
-  ```
-- **`TalentJobRanker`**: This class handles ranking/classification model training, prediction, and other operations. It is the central class for managing model lifecycle and predictions. Async methods in `TalentJobRanker` are used to perform I/O-bound operations, such as loading and saving models, without blocking the main thread. 
-  
-  ```python
-  from instaffo_matching.models.ranker import TalentJobRanker
-  ```
-- **`Search`** Class: Manages the end-to-end process of filtering and ranking talent-job matches. It includes methods for both single and bulk matching, supporting efficient evaluation and scoring.. It leverages `CandidateFilter` for pre-filtering candidates and `TalentJobRanke`r for predictions.
-
-  ```python
-  from instaffo_matching.search.search import Search
-  ```
+#### **Key Classes:**
+- `FeatureEngineer`: Handles data preprocessing and feature extraction. (`features/engineer.py`)
+- `TalentJobRanker`: Manages model training, prediction, and lifecycle. (`models/ranker.py`)
+- `CandidateFilter`: Quickly eliminates incompatible matches based on essential criteria. (`models/retriver.py`)
+- `Search`: Orchestrates the end-to-end matching process. (`search/search.py`)
 
 ## Setup
 
-#### Prerequisites
+### Prerequisites
 
 Ensure you have the following installed:
-- Python 3.7 or higher
+- Python 3.9 or higher
 - pip (Python package installer)
 
-### Core Installation
+### Installation
 
-To install the core dependencies and the package itself, run:
-```
-git clone https://github.com/aleksabisercic/instaffo_matching.git
-cd instaffo_matching
-pip install -e .
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/aleksabisercic/instaffo_matching.git
+   cd instaffo_matching
+   ```
+2. Install core dependencies:
+    ```bash
+    pip install -e .
+    ```
+3. (Optional) Install development for notebooks and visualization tools:
+    ```bash
+    pip install -e .[dev]
+    ```
 
-### Development and Visualization Tools
+## Usage
 
-If you plan to use **notebooks** and **visualization features**, install the additional development dependencies:
-
-```bash
-pip install -e .[dev]
-```
-
-## Quick Start
+### Quick Start
 
 ```python
 from instaffo_matching import Search
