@@ -1,52 +1,49 @@
 import asyncio
-import datetime
 import argparse
+import json
 
 from instaffo_matching.utils.logging import setup_logger
 from instaffo_matching.data.loader import load_data, get_matching_dataframes
 from instaffo_matching.data.preprocessor import standardize_data
-from instaffo_matching.models.ranker import TalentJobRanker
+from instaffo_matching.search.search import Search
 
 logger = setup_logger()
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train TalentJobRanker model")
     parser.add_argument('--data_path', type=str, default="./data/data.json", help="Path to the data JSON file")
-    parser.add_argument('--model_save_path', type=str, default="./models_artifacts/", help="Directory to save the trained model")
+    parser.add_argument('--model_path', type=str, default="./models_artifacts/model_03_08_2024.joblib", help="Path to the trained model")
     return parser.parse_args()
 
-async def main(data_path, model_save_path):
+async def main(data_path, model_path):
     # Load data
     data = load_data(data_path)
     talent_df, job_df, labels_df = get_matching_dataframes(data=data)
     logger.info("Data loaded successfully")
 
-    # Clean / Preprocess data
-    talent_df, job_df = standardize_data(talent_df, job_df)
-    logger.info("Data cleaned successfully")
+    search = Search(model_path)
 
-    # Fit model
-    ranker = TalentJobRanker()
-    ranker.fit(talent_df, job_df, labels_df)
-    logger.info("Model fitted successfully")
-
-    # Save the trained model
-    formatted_time = datetime.datetime.now().strftime("%d_%m_%Y")
-    model_path = f"{model_save_path}/model_{formatted_time}.joblib"
-    await ranker.save_model(model_path)
-    logger.info(f"Model saved successfully at {model_path}")
-
-    # Load models and predict
-    sample_talent = talent_df.sample(2)
-    sample_job = job_df.loc[sample_talent.index]
+    # test the match function
+    logger.info("Running match function")
+    result = search.match(talent=talent_df.iloc[0].to_dict(), job=job_df.iloc[0].to_dict())
+    logger.info("Match function result:")
+    logger.info(json.dumps(result))
     
-    ranker = TalentJobRanker(model_path=model_path)
-    logger.info("Loaded model and feature engineer successfully")
-    label, score = ranker.predict(sample_job, talent_df)
-    logger.info(f"Predicted label: {label}, score: {score}")
-
+    import time 
+    t1 = time.time()
+    # test the match_bulk function
+    results = await search.match_bulk(talent_df.head(100).to_dict(orient='records'), 
+                                    job_df.head(100).to_dict(orient='records'))
+    t2 = time.time()
+    logger.info(f"Time taken to run match_bulk: {t2 - t1}. Total results: {len(results)}")
+    logger.info("Match bulk function result (first 5):")
+    logger.info(json.dumps(results[:10]))
+    logger.info("Match bulk function result (last 5):")
+    logger.info(json.dumps(results[-10:]))
+    
+    # 
 if __name__ == "__main__":
     # Useage from root: 
-    # python scripts/train_model.py --data_path data/data.json --model_save_path models_artifacts/
+    # python scripts/search_example.py --data_path data/data.json --model_path ./models_artifacts/model_03_08_2024.joblib
     args = parse_args()
-    asyncio.run(main(args.data_path, args.model_save_path))
+    asyncio.run(main(args.data_path, args.model_path))
