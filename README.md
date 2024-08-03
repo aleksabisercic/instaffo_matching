@@ -39,16 +39,21 @@ Here I will put Arhitecture
 
 The project includes several key classes that are crucial for its functionality:
 
-- **`TalentJobRanker`**: This class handles ranking/classification model training, prediction, and other operations. It is the central class for managing model lifecycle and predictions. Async methods in `TalentJobRanker` are used to perform I/O-bound operations, such as loading and saving models, without blocking the main thread. 
-  
-  ```python
-  from instaffo_matching.models.ranker import TalentJobRanker
-  ```
 
 - **`FeatureEngineer`**: This class is responsible for feature extraction and transformation, significantly contributing to the model's performance. It includes methods for data preprocessing, including handling categorical and numerical features.
 
   ```python
   from instaffo_matching.features.engineer import FeatureEngineer
+  ```
+- **`TalentJobRanker`**: This class handles ranking/classification model training, prediction, and other operations. It is the central class for managing model lifecycle and predictions. Async methods in `TalentJobRanker` are used to perform I/O-bound operations, such as loading and saving models, without blocking the main thread. 
+  
+  ```python
+  from instaffo_matching.models.ranker import TalentJobRanker
+  ```
+- **`Search`** Class: Manages the end-to-end process of filtering and ranking talent-job matches. It includes methods for both single and bulk matching, supporting efficient evaluation and scoring.. It leverages `CandidateFilter` for pre-filtering candidates and `TalentJobRanke`r for predictions.
+
+  ```python
+  from instaffo_matching.search.search import Search
   ```
 
 ## Setup
@@ -83,26 +88,37 @@ from instaffo_matching import Search
 
 search = Search()
 
+# Define the talent's profile
 talent = {
-    "languages": [{"title": "English", "rating": "C2"}, {"title": "German", "rating": "B2"}],
-    "job_roles": ["software engineer", "data scientist"],
-    "seniority": "mid",
-    "salary_expectation": 80000,
-    "degree": "master"
+    "degree": "bachelor",
+    "job_roles": ["frontend-developer", "backend-developer"],
+    "languages": [
+        {"rating": "C2", "title": "German"},
+        {"rating": "C2", "title": "English"},
+        {"rating": "B2", "title": "French"}
+    ],
+    "salary_expectation": 48000,
+    "seniority": "junior"
 }
 
+# Define the job's requirements
 job = {
-    "languages": [{"title": "English", "rating": "C1", "must_have": True}],
-    "job_roles": ["software engineer"],
-    "seniorities": ["mid", "senior"],
-    "max_salary": 90000,
-    "min_degree": "bachelor"
+    "job_roles": ["frontend-developer"],
+    "languages": [
+        {"title": "German", "rating": "C1", "must_have": True},
+        {"title": "English", "rating": "B2", "must_have": True}
+    ],
+    "max_salary": 70000,
+    "min_degree": "none",
+    "seniorities": ["junior", "midlevel"]
 }
 
+# Perform the matching process
 result = search.match(talent, job)
+
+# Print the match results
 print(f"Match Result: {result['label']}")
 print(f"Match Score: {result['score']:.2f}")
-print(f"Ranking Score: {result['ranking_score']:.2f}")
 ```
 
 ## Command Line Interface (CLI)

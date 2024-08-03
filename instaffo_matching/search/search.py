@@ -104,20 +104,6 @@ class Search:
                 ...
             ]
         """
-        async def match_combination(talent, job):
-            return self.match(talent, job)
-
-        all_results = []
-        for job in jobs:
-            filtered_talents = self.filter.filter_candidates(job, talents)
-            tasks = [match_combination(talent, job) for talent in filtered_talents]
-            job_results = await asyncio.gather(*tasks)
-            all_results.extend(job_results)
-
-        return sorted(all_results, key=lambda x: x['score'], reverse=True)
-    
-    @timing_decorator
-    async def match_bulk2(self, talents: List[Dict], jobs: List[Dict]) -> List[Dict]:
         all_results = []
 
         for job in jobs:
