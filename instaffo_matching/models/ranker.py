@@ -104,9 +104,9 @@ class TalentJobRanker:
             logger.error("Failed to load model or feature engineer: %s", e)
             raise ModelLoadError(f"Failed to load model: {e}")
 
-    async def fit(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
+    def fit(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
         """
-        Asynchronously fits the model using the provided talent and job data.
+        Fits the model using the provided talent and job data.
 
         Args:
             talent_df (pd.DataFrame): DataFrame containing talent data.
@@ -118,9 +118,9 @@ class TalentJobRanker:
         """
         logger.info("Starting training process.")
         try:
-            X_train, X_test, y_train, y_test = await asyncio.to_thread(self._prepare_data, talent_df, job_df, labels)
-            await asyncio.to_thread(self._train_model, X_train, y_train)
-            await asyncio.to_thread(self._evaluate_model, X_test, y_test)
+            X_train, X_test, y_train, y_test = self._prepare_data(talent_df, job_df, labels)
+            self._train_model(X_train, y_train)
+            self._evaluate_model(X_test, y_test)
         except Exception as e:
             logger.error("Error during the training process: %s", e)
             raise

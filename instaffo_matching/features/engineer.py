@@ -27,8 +27,6 @@ class FeatureEngineer:
 
     def __init__(self):
         self.job_role_vectorizer = TfidfVectorizer()
-        self.scaler = StandardScaler()
-        self.one_hot_encoder = OneHotEncoder(sparse=False)
         self.preprocessor = None
 
         # for feature importance
@@ -80,7 +78,7 @@ class FeatureEngineer:
                 ("num", StandardScaler(), list(range(features.shape[1]))),
                 (
                     "cat",
-                    OneHotEncoder(sparse=False, handle_unknown="ignore"),
+                    OneHotEncoder(sparse_output=False, handle_unknown="ignore"),
                     list(
                         range(features.shape[1], features.shape[1] + categorical_features.shape[1])
                     ),
