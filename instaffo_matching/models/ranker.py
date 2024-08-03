@@ -88,7 +88,7 @@ class TalentJobRanker:
                 logger.error(f"Failed to load model: {e}")
                 # Initialize a new model if loading fails
                 raise ModelLoadError(f"Failed to load model: {e}")
-        logger.info(f"Initialized a new {model_strategy.__name__} model and FeatureEngineer.")
+        logger.info(f"Initialized {model_strategy.__name__} model and FeatureEngineer.")
 
     def _load_model_sync(self, model_path: str):
         """
@@ -224,7 +224,7 @@ class TalentJobRanker:
             features = self._transform_input(job, talent)
             labels = self.model_strategy.predict(features)
             scores = self.model_strategy.predict_proba(features)
-            logger.info("Prediction made successfully.")
+            logger.debug("Prediction made successfully.")
             # Check if the input is for a single prediction or multiple predictions
             if len(labels) == 1:
                 return bool(labels[0]), float(scores[0][1])
