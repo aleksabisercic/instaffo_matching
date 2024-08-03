@@ -8,11 +8,15 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
   - [Table of Contents](#table-of-contents)
   - [Project Overview](#project-overview)
   - [Features](#features)
+      - [Key Classes](#key-classes)
   - [Setup](#setup)
       - [Prerequisites](#prerequisites)
     - [Core Installation](#core-installation)
     - [Development and Visualization Tools](#development-and-visualization-tools)
   - [Quick Start](#quick-start)
+  - [Command Line Interface (CLI)](#command-line-interface-cli)
+    - [Training the Model](#training-the-model)
+    - [Evaluating the Model](#evaluating-the-model)
   - [API Usage](#api-usage)
     - [Advanced Usage](#advanced-usage)
     - [Support](#support)
@@ -30,6 +34,22 @@ Here I will put Arhitecture
 - RESTful API with OpenAPI (Swagger) specification
 - Comprehensive logging and monitoring
 - Scalable architecture ready for high-volume processing
+
+#### Key Classes
+
+The project includes several key classes that are crucial for its functionality:
+
+- **`TalentJobRanker`**: This class handles ranking/classification model training, prediction, and other operations. It is the central class for managing model lifecycle and predictions. Async methods in `TalentJobRanker` are used to perform I/O-bound operations, such as loading and saving models, without blocking the main thread. 
+  
+  ```python
+  from instaffo_matching.models.ranker import TalentJobRanker
+  ```
+
+- **`FeatureEngineer`**: This class is responsible for feature extraction and transformation, significantly contributing to the model's performance. It includes methods for data preprocessing, including handling categorical and numerical features.
+
+  ```python
+  from instaffo_matching.features.engineer import FeatureEngineer
+  ```
 
 ## Setup
 
@@ -50,7 +70,7 @@ pip install -e .
 
 ### Development and Visualization Tools
 
-If you plan to use notebooks and visualization features, install the additional development dependencies:
+If you plan to use **notebooks** and **visualization features**, install the additional development dependencies:
 
 ```bash
 pip install -e .[dev]
@@ -85,6 +105,24 @@ print(f"Match Score: {result['score']:.2f}")
 print(f"Ranking Score: {result['ranking_score']:.2f}")
 ```
 
+## Command Line Interface (CLI)
+
+### Training the Model
+
+To train the model using the provided script, run the following command:
+
+```bash
+python scripts/train_model.py --data_path data/data.json --model_save_path models_artifacts/
+```
+
+### Evaluating the Model
+
+To evaluate the model's performance, use the evaluation script:
+
+```bash
+# Usage from root directory:
+python scripts/evaluate_model.py --data_path data/data.json --model_path ./models_artifacts/model_03_08_2024.joblib
+```
 
 ## API Usage
 

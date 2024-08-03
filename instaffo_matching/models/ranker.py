@@ -132,7 +132,7 @@ class TalentJobRanker:
             logger.error(f"Failed to load model or feature engineer: {e}")
             raise ModelLoadError(f"Failed to load model: {e}")
     
-    def train(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
+    def fit(self, talent_df: pd.DataFrame, job_df: pd.DataFrame, labels: pd.DataFrame):
         """
         Fits the model using the provided talent and job data.
 

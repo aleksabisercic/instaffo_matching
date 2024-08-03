@@ -29,16 +29,18 @@ async def main(data_path, model_path):
     logger.info("Data cleaned successfully")
     
     # get test data
-    _, talent_df_test, _, job_df_test, _, labels_test = train_test_split(talent_df, job_df, labels_df, test_size=0.2, random_state=42)
+    _, talent_df_test, _, job_df_test, _, labels_test = train_test_split(talent_df, job_df, labels_df, 
+                                                                         test_size=0.2, random_state=42, 
+                                                                         stratify=labels_df["label"])
     
     ranker = TalentJobRanker(model_path=model_path)
     logger.info("Loaded model and feature engineer successfully")
     label, score = ranker.predict(job_df_test, talent_df_test)
     
     # classification report based on predicted labels
-    y_true = labels_df["label"].values
+    y_true = labels_test["label"].values
     y_pred = label
-    
+        
     logger.info(f"Classification report: {classification_report(y_true, y_pred)}")
     
 
