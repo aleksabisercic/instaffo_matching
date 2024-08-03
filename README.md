@@ -87,7 +87,7 @@ Ensure you have the following installed:
 ### Quick Start
 
 ```python
-from instaffo_matching import Search
+from instaffo_matching.search.search import Search
 
 search = Search()
 
