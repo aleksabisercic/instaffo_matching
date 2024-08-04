@@ -13,7 +13,9 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
 - [Instaffo Matching System](#instaffo-matching-system)
   - [Table of Contents](#table-of-contents)
   - [Project Overview](#project-overview)
-  - [Features](#features)
+    - [Offline Environment](#offline-environment)
+    - [Online Environment](#online-environment)
+    - [Features](#features)
       - [Key Classes:](#key-classes)
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
@@ -26,24 +28,47 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
     - [Search Client (Batch and Single Match)](#search-client-batch-and-single-match)
   - [Interactive Notebooks](#interactive-notebooks)
   - [Model Performance and Insights](#model-performance-and-insights)
+    - [Confusion Matrix](#confusion-matrix)
+    - [Top Feature Importance:](#top-feature-importance)
     - [Advanced Usage](#advanced-usage)
     - [Support](#support)
 
 ## Project Overview
 
-[Raw Data] -> [Initial Filtering] -> [Feature Engineering] -> [ML Prediction] -> [(soon) Explanation] -> [Ranking] -> [Final Matches]
+Instaffo Matching employs a multi-stage pipeline to ensure optimal matching between talents and jobs:
 
-Instaffo Matching employs a sophisticated multi-stage pipeline to ensure optimal matching between talents and jobs:
+![Data Flow Diegram](assets/data_flow.png)
 
-1. **Initial Filtering**: Quickly eliminates incompatible matches based on essential criteria.
-2. **Feature Engineering**: Transforms raw data into meaningful features using TF-IDF embeddings and custom transformations.
-3. **Machine Learning Prediction**: Utilizes gradient boosting model to predict match quality.
-4. **Ranking**: Sorts potential matches based on predicted scores and additional criteria.
-5. **(Comming soon) Explanation**: Explanability into matching decisions using SHAP values.
+The system is split into offline and online components:
 
-## Features
+### Offline Environment
 
-- Advanced feature engineering using Tf-Idf embeddings and feature combination
+1. **Building Filters:** Establish criteria to filter out candidates who do not meet basic job requirements, streamlining the matching process by testing hypotesis based on Instaffo dataset.
+   
+2. **Building Feature Engineer**: This step involves, identifing custom transformations, bulding features and transforming raw data into structured features using techniques like TF-IDF, making the data suitable for model training.
+
+3. **Model Training**: Train gradient boosting model using historical match data, incorporating engineered features to predict the likelihood of successful matches.
+
+4. **Define Business Logic:** Defined and tuned logic to align the model's outputs with the platform's objectives and user needs.
+
+### Online Environment
+
+The online environment is optimized for low-latency responses to matching requests:
+
+5. **Initial Filtering**: The `CandidateFilter` class quickly eliminates incompatible matches based on essential criteria, significantly reducing the search space.
+
+26. **Feature Engineering**: The `FeatureEngineer` class transforms the input data into the same feature space used in our offline training.
+
+7. **Machine Learning Prediction**: The `TalentJobRanker` class uses the trained ml model to predict match quality for the filtered candidates.
+
+8. **Ordering Business Logic**: Potential matches are sorted based on predicted scores and additional criteria.
+
+9. **Result Serving**: The top-ranked results are returned, representing the most promising talent-job matches.
+
+
+### Features
+
+- Advanced feature engineering
 - Multi-stage search pipeline for efficient and accurate matching
 - Asynchronous bulk matching capabilities
 - Comprehensive logging and monitoring
@@ -179,26 +204,25 @@ To run the notebooks:
 
 ## Model Performance and Insights
 
-Our model achieves exceptional performance in matching talents with job opportunities:
+Model achieves excellent performance in matching talents with job opportunities:
 
-```
-              precision    recall  f1-score   support
+|               | Precision | Recall | F1-Score | Support |
+|---------------|-----------|--------|----------|---------|
+| **False**     | 0.99      | 0.99   | 0.99     | 200     |
+| **True**      | 0.99      | 0.99   | 0.99     | 200     |
+| **Accuracy**  |           |        | 0.99     | 400     |
+| **Macro Avg** | 0.99      | 0.99   | 0.99     | 400     |
+| **Weighted Avg** | 0.99   | 0.99   | 0.99     | 400     |
 
-       False      0.99      0.99      0.99       200
-        True      0.99      0.99      0.99       200
+### Confusion Matrix
 
-    accuracy                          0.99       400
-   macro avg      0.99      0.99      0.99       400
-weighted avg      0.99      0.99      0.99       400
-```
+|              | Predicted False | Predicted True |
+|--------------|-----------------|----------------|
+| Actual False | 199             | 1              |
+| Actual True  | 2               | 198            |
 
-Confusion Matrix:
-```
-[[199,   1]
- [  2, 198]]
-```
 
-Top Feature Importance:
+### Top Feature Importance:
 
 | Feature                        | Importance |
 |--------------------------------|------------|
