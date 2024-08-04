@@ -16,7 +16,6 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
     - [Offline Environment](#offline-environment)
     - [Online Environment](#online-environment)
     - [Features](#features)
-      - [Key Classes:](#key-classes)
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
@@ -77,7 +76,7 @@ The online environment is optimized for low-latency responses to matching reques
 - (comming soon) RESTful API with OpenAPI (Swagger) specification
 
 
-#### Key Classes:
+**Key Classes:**
 - `FeatureEngineer`: Handles data preprocessing and feature extraction. (`features/engineer.py`)
 - `TalentJobRanker`: Manages model training, prediction, and lifecycle. (`models/ranker.py`)
 - `CandidateFilter`: Quickly eliminates incompatible matches based on essential criteria. (`models/retriver.py`)
@@ -180,7 +179,7 @@ python scripts/search_example.py --data_path data/data.json --model_path ./model
 
 ## Interactive Notebooks
 
-I encourage you to explore Jupyter notebooks to gain deeper insights into the data analysis, feature engineering, and model training process:
+I encourage you to explore Jupyter notebooks to gain deeper insights into initial thinking, exploratory analysis, feature engineering, and model training process:
 
 - `01_exploratory_data_analysis.ipynb`: Initial data exploration and insights
 - `02_exploratory_filter_analysis.ipynb`: Analysis of filtering techniques
@@ -188,7 +187,7 @@ I encourage you to explore Jupyter notebooks to gain deeper insights into the da
 - `04_feature_engineering_and_model_training_v2.ipynb`: Less graphs in training more like script
 - `05_search_implementation_example.ipynb`: Demonstration of the Search functionality
 
-These notebooks provide a comprehensive look at the development process and can help you understand the reasoning behind our approach.
+These notebooks provide a comprehensive look at the how it looked before development process and can help you understand the reasoning behind some decisions.
 
 To run the notebooks:
 
@@ -243,4 +242,4 @@ For more advanced usage, including bulk matching, explanation of results, and cu
 
 ### Support
 
-For support, please open an issue on our GitHub issue tracker or contact our support team at aleksabisercic@gmail.com
+For support, please open an issue on our GitHub issue tracker or contact at aleksabisercic@gmail.com
