@@ -1,10 +1,35 @@
-version: '3'
+version: '3.8'
+
 services:
-  web:
+  base:
     build: .
-    ports:
-      - "8000:8000"
     volumes:
       - .:/app
+      - model_artifacts:/app/models_artifacts
     environment:
-      - MODEL_PATH=/app/models_artifacts/feature_engineer03_08_2024.joblib
+      - DATA_PATH=/app/data/data.json
+      - MODEL_SAVE_PATH=/app/models_artifacts/
+      - MODEL_PATH=/app/models_artifacts/model_03_08_2024.joblib
+
+  train:
+    extends:
+      service: base
+    command: python scripts/train_model.py --data_path ${DATA_PATH} --model_save_path ${MODEL_SAVE_PATH}
+
+  evaluate:
+    extends:
+      service: base
+    command: python scripts/evaluate_model.py --data_path ${DATA_PATH} --model_path ${MODEL_PATH}
+
+  search:
+    extends:
+      service: base
+    command: python scripts/search_example.py --data_path ${DATA_PATH} --model_path ${MODEL_PATH}
+
+  all:
+    extends:
+      service: base
+    command: /app/run_all.sh
+
+volumes:
+  model_artifacts:
