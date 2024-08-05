@@ -6,7 +6,7 @@
 [![PyPI version](https://badge.fury.io/py/instaffo-matching.svg)](https://badge.fury.io/py/instaffo-matching)
 
 
-Instaffo Matching is Talent-Job Matching System designed to efficiently match job canidats with suitable job opportunities. Utilizing advanced machine learning techniques, natural language processing, and a multi-stage matching pipeline, this system provides highly accurate and explainable matches between talents and jobs.
+Instaffo Matching is Talent-Job Matching System designed to efficiently match job canidats with suitable job opportunities. Utilizing advanced machine learning techniques, natural language processing, and a multi-stage matching pipeline, this system provides highly accurate matches between talents and jobs.
 
 ## Table of Contents
 
@@ -29,8 +29,12 @@ Instaffo Matching is Talent-Job Matching System designed to efficiently match jo
   - [Model Performance and Insights](#model-performance-and-insights)
     - [Confusion Matrix](#confusion-matrix)
     - [Top Feature Importance:](#top-feature-importance)
-    - [Advanced Usage](#advanced-usage)
-    - [Support](#support)
+  - [Advanced Usage](#advanced-usage)
+    - [Docker and Docker Compose Guide](#docker-and-docker-compose-guide)
+      - [Quick Start with Docker](#quick-start-with-docker)
+      - [Running Specific Scripts with Docker](#running-specific-scripts-with-docker)
+      - [Using Docker Compose](#using-docker-compose)
+  - [Support](#support)
 
 ## Project Overview
 
@@ -163,7 +167,7 @@ python scripts/train_model.py --data_path data/data.json --model_save_path model
 To evaluate the model's performance, use the evaluation script:
 
 ```bash
-# Usage from root directory:
+# Usage from root directory (assuming you want to evaluate defult model_03_08_2024.joblib model):
 python scripts/evaluate_model.py --data_path data/data.json --model_path ./models_artifacts/model_03_08_2024.joblib
 ```
 
@@ -172,7 +176,7 @@ python scripts/evaluate_model.py --data_path data/data.json --model_path ./model
 To evaluate search implementation use search_example script:
 
 ```bash
-# Usage from root directory:
+# Usage from root directory (assuming you want to evaluate defult model_03_08_2024.joblib model):
 python scripts/search_example.py --data_path data/data.json --model_path ./models_artifacts/model_03_08_2024.joblib
 ```
 
@@ -235,11 +239,66 @@ Model achieves excellent performance in matching talents with job opportunities:
 
 These results demonstrate the model's strong ability to identify suitable matches while considering various important factors in the hiring process. Special attention was given to thoroughly reviewe the training code, including aspects related to data leakage and other crucial elements as results seemed too good. For more details, please refer to `03_feature_engineering_and_model_training_v1.ipynb` and `04_feature_engineering_and_model_training_v2.ipynb`.
 
+## Advanced Usage
 
-### Advanced Usage
+For more advanced usage, including bulk matching, explanation of results, and customization of the matching process, please refer to our detailed notebooks (`notebooks`) and source code in `instaffo_matching` directory.
 
-For more advanced usage, including bulk matching, explanation of results, and customization of the matching process, please refer to our detailed notebooks (`notebooks`) and source code in `instaffo_matching`.
 
-### Support
+###  Docker and Docker Compose Guide
+For consistent execution across environments you can also leverage Docker.
 
-For support, please open an issue on our GitHub issue tracker or contact at aleksabisercic@gmail.com
+
+#### Quick Start with Docker
+
+1. Build the Docker image:
+   ```
+   docker build -f docker/Dockerfile -t instaffo-matching-test .
+   ```
+
+2. Run all scripts:
+   ```
+   docker run instaffo-matching-test
+   ```
+
+That's it! This will train the model, evaluate it, and run a search example.
+
+#### Running Specific Scripts with Docker
+
+If you want to run individual scripts:
+
+- Train the model:
+  ```
+  docker run instaffo-matching-test python scripts/train_model.py --data_path $DATA_PATH --model_save_path $MODEL_SAVE_PATH
+  ```
+
+- Evaluate the model:
+  ```
+  docker run instaffo-matching-test python scripts/evaluate_model.py --data_path $DATA_PATH --model_path $MODEL_PATH
+  ```
+
+- Run search example:
+  ```
+  docker run instaffo-matching-test python scripts/search_example.py --data_path $DATA_PATH --model_path $MODEL_PATH
+  ```
+
+#### Using Docker Compose
+
+Docker Compose makes it even easier if you want to manage like you would services.
+
+1. Run all services:
+   ```
+   docker-compose -f docker/docker-compose.yml up all
+   ```
+2. Or run specific services:
+   - Train: `docker-compose -f docker/docker-compose.yml up train`
+   - Evaluate: `docker-compose -f docker/docker-compose.yml up evaluate`
+   - Search: `docker-compose -f docker/docker-compose.yml up search`
+
+3. When you're done, stop and remove the containers:
+   ```
+   docker-compose -f docker/docker-compose.yml down
+   ```
+
+## Support
+
+For support, please open an issue on GitHub issue tracker or contact me at aleksabisercic@gmail.com
