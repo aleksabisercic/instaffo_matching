@@ -283,7 +283,7 @@ If you want to run individual scripts:
 
 #### Using Docker Compose
 
-Docker Compose makes it even easier if you want to manage like you would services.
+Docker Compose makes it even easier:
 
 1. Run all services:
    ```
