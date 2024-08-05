@@ -34,8 +34,10 @@ exec "$@"' > /app/run_all.sh && chmod +x /app/run_all.sh
 CMD ["/app/run_all.sh"]
 
 
-# docker build -t instaffo-matching-test .
+# From the root of the project, build the docker image and run it
+# docker build -f docker/Dockerfile -t instaffo-matching-test .
 # docker run instaffo-matching-test
+
 # To run only the training script
 # docker run instaffo-matching-test python scripts/train_model.py --data_path $DATA_PATH --model_save_path $MODEL_SAVE_PATH
 
